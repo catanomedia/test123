@@ -43,22 +43,23 @@ zielgroesse = (4416, 3336)  # Sollte mit der Eingabegröße Ihres Modells übere
 train_images, train_labels = daten_laden_und_vorbereiten(bilder_pfade, ball_koordinaten, zielgroesse)
 
 
-# Modellarchitektur
 modell = Sequential([
-    Input(shape=(4416, 3336, 3)),
+    Input(shape=(zielgroesse[0], zielgroesse[1], 3)),
+    Conv2D(16, (3, 3), activation='relu'),  # Anzahl der Filter reduziert
     MaxPooling2D((2, 2)),
-    Conv2D(64, (3, 3), activation='relu'),
+    Conv2D(32, (3, 3), activation='relu'),  # Anzahl der Filter reduziert
     MaxPooling2D((2, 2)),
     Flatten(),
-    Dense(64, activation='relu'),
-    Dense(2)  # Output-Layer: 2 Neuronen für x und y Koordinaten
+    Dense(32, activation='relu'),  # Größe des Dense-Layers reduziert
+    Dense(2)
 ])
 
 # Modell kompilieren
 modell.compile(optimizer=Adam(learning_rate=0.001), loss='mean_squared_error')
 
-# Modell trainieren
-modell.fit(train_images, train_labels, epochs=10)
+# Trainieren des Modells mit einer kleineren Batch-Größe
+batch_groesse = 16  # Batch-Größe reduziert
+modell.fit(train_images, train_labels, batch_size=batch_groesse, epochs=10)
 
 # Modell evaluieren
 # Hier müssten Sie das Modell mit Testdaten evaluieren
