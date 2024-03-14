@@ -4,7 +4,7 @@ from tensorflow.keras.layers import Input, Conv2D, MaxPooling2D, Flatten, Dense
 from tensorflow.keras.optimizers import Adam
 import numpy as np
 import cv2
-from tensorflow.keras.preprocessing.image import img_to_array
+from tensorflow.keras.preprocessing.image import img_to_array, load_img
 
 def daten_laden_und_vorbereiten(bilder_pfade, ball_koordinaten, zielgroesse):
     train_images = []
@@ -64,8 +64,24 @@ modell.fit(train_images, train_labels, batch_size=batch_groesse, epochs=10)
 # Modell evaluieren
 # Hier müssten Sie das Modell mit Testdaten evaluieren
 
-# Modell verwenden
-# Um die Koordinaten des Balls auf einem neuen Bild vorherzusagen, können Sie folgendes tun:
-print('starten')
-vorhersage = modell.predict('pictures/DC0723.jpg')
-print('vorhersage', vorhersage)
+# Laden des zu testenden Bildes
+test_bild_pfad = 'pictures/DC0723.jpg'
+test_bild = load_img(test_bild_pfad, target_size=zielgroesse)
+test_bild = img_to_array(test_bild)
+test_bild /= 255.0  # Normalisierung, wenn Ihre Trainingsdaten ebenfalls normalisiert wurden
+
+# Hinzufügen einer zusätzlichen Dimension, da das Modell eine Batch-Dimension erwartet
+# (model.predict erwartet eine Liste von Bildern, nicht ein einzelnes Bild)
+test_bild = np.expand_dims(test_bild, axis=0)
+
+# Vorhersage mit dem Modell
+vorhersage = modell.predict(test_bild)
+
+# Die Ausgabe `vorhersage` ist eine Liste von Koordinaten
+vorhergesagte_koordinaten = vorhersage[0]
+
+# Rückskalierung der Koordinaten, falls nötig
+x_koordinate = vorhergesagte_koordinaten[0] * zielgroesse[0]
+y_koordinate = vorhergesagte_koordinaten[1] * zielgroesse[1]
+
+print(f'Vorhergesagte Koordinaten des Balls: (x: {x_koordinate}, y: {y_koordinate})')
